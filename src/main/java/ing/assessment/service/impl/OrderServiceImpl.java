@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderProducts(OrderProductConverter.convertToOrderProduct(createOrderRequestDto));
         order.setTimestamp(new Date());
         calculateCostDelivery(createOrderRequestDto, order);
-        return order;
+        return orderRepository.save(order);
     }
 
     private void calculateCostDelivery(CreateOrderRequestDto createOrderRequestDto, Order order) {

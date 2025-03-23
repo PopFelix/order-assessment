@@ -1,13 +1,12 @@
 package ing.assessment.controller.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 @Data
-@Builder
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class OrderProductDto {
     private Integer productId;
     private Integer quantity;
