@@ -1,16 +1,19 @@
 package ing.assessment.util;
 
-import ing.assessment.controller.dto.CreateOrderRequestDto;
-import ing.assessment.db.product.Product;
+import ing.assessment.db.order.Order;
 import lombok.experimental.UtilityClass;
-
-import java.util.List;
 
 @UtilityClass
 public class OrderCalculatorUtil {
 
-    public static Double calculateOrderCost(List<Product> products, CreateOrderRequestDto createOrderRequestDto) {
+    public static final double TEN_PERCENT_DISCOUNT = 0.9;
 
-        return null;
+    public static void applyDiscount(Order order) {
+        if (order.getOrderCost() > 500) {
+            order.setDeliveryCost(0);
+            if (order.getOrderCost() > 1000) {
+                order.setOrderCost(order.getOrderCost() * TEN_PERCENT_DISCOUNT);
+            }
+        }
     }
 }
