@@ -5,9 +5,11 @@ import ing.assessment.db.order.Order;
 import ing.assessment.db.repository.OrderRepository;
 import ing.assessment.service.OrderService;
 import ing.assessment.service.validator.OrderProductValidator;
+import ing.assessment.util.OrderProductConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,6 +26,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrder(CreateOrderRequestDto createOrderRequestDto) {
         Order order = new Order();
-        return null;
+        orderProductValidator.validateProductStock(createOrderRequestDto.getOrderProducts());
+        order.setOrderProducts(OrderProductConverter.convertToOrderProduct(createOrderRequestDto));
+        order.setTimestamp(new Date());
+        order.setOrderCost(0.0);
+        return order;
     }
 }
