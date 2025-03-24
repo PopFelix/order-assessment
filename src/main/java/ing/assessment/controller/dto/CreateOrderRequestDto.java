@@ -1,12 +1,12 @@
 package ing.assessment.controller.dto;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.List;
 
 @Data
 public class CreateOrderRequestDto {
+    @NotEmpty(message = "list of ordered products is empty")
     private List<OrderProductDto> orderProducts;
 }
