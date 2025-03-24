@@ -6,7 +6,6 @@ import ing.assessment.db.order.Order;
 import ing.assessment.db.product.Product;
 import ing.assessment.db.repository.OrderRepository;
 import ing.assessment.db.repository.ProductRepository;
-import ing.assessment.exception.NoProductFoundException;
 import ing.assessment.model.Location;
 import ing.assessment.service.OrderService;
 import ing.assessment.service.validator.OrderProductValidator;
@@ -49,14 +48,31 @@ public class OrderServiceImpl implements OrderService {
         Map<Location, Integer> locationCount = new HashMap<>();
         List<OrderProductDto> orderProducts = createOrderRequestDto.getOrderProducts();
         for (OrderProductDto orderProduct : orderProducts) {
-            Product product = productRepository.findByProductCk_Id(orderProduct.getProductId()).stream()
-                    .findFirst()
-                    .orElseThrow(() -> new NoProductFoundException("No product found for id: " + orderProduct.getProductId()));
-            orderCost += product.getPrice() * orderProduct.getQuantity();
-            locationCount.put(product.getProductCk().getLocation(), locationCount.getOrDefault(product.getProductCk().getLocation(), 0) + 1);
+            List<Product> products = productRepository.findByProductCk_Id(orderProduct.getProductId());
+            orderCost += calculateOrderCostForProduct(locationCount, orderProduct, products);
         }
         order.setOrderCost(orderCost);
         order.setDeliveryTime(locationCount.size() * 2);
         OrderCalculatorUtil.applyDiscount(order);
+    }
+
+    private double calculateOrderCostForProduct(Map<Location, Integer> locationCount, OrderProductDto orderProduct, List<Product> products) {
+        double orderCost = 0.0;
+        Integer usedQuantity = orderProduct.getQuantity();
+        for (var product : products) { // var keyword Java 17 feature
+            if (product.getQuantity() <= usedQuantity) {
+                orderCost += product.getPrice() * product.getQuantity();
+                usedQuantity -= product.getQuantity();
+                locationCount.put(product.getProductCk().getLocation(), locationCount.getOrDefault(product.getProductCk().getLocation(), 0) + 1);
+                productRepository.deleteProductByProductCk(product.getProductCk());
+            } else {
+                product.setQuantity(product.getQuantity() - usedQuantity);
+                productRepository.saveAndFlush(product);
+                locationCount.put(product.getProductCk().getLocation(), locationCount.getOrDefault(product.getProductCk().getLocation(), 0) + 1);
+                orderCost += product.getPrice() * usedQuantity;
+                break;
+            }
+        }
+        return orderCost;
     }
 }
